@@ -1,4 +1,4 @@
-# PythonInR - Makes accessing Python from within R as easy as pie.
+# PythonInR
 
 More documenation can be found at [https://bitbucket.org/Floooo/pythoninr](https://bitbucket.org/Floooo/pythoninr) and [http://pythoninr.bitbucket.org/](http://pythoninr.bitbucket.org/).
 
