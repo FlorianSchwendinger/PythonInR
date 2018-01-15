@@ -31,6 +31,10 @@ if ( ret == -1 ) warning("stdout redirection was not successful")
 return( invisible( ret ) )
 }
 
+#' @describeIn pyConnect
+#' @param majorVersion The Major Python version, e.g. 2 or 3.
+#' @param pyArch The Python architecture, i.e. "32bit" or "64bit".
+#' @param useCstdout Output flag.
 pyConnectWinDll <- function(dllName, dllDir, majorVersion, 
                             pythonHome, pyArch, useCstdout=NULL){
     if(pyIsConnected()){
@@ -59,7 +63,7 @@ pyConnectWinDll <- function(dllName, dllDir, majorVersion,
         Sys.setenv(PYTHONHOME=pythonHome)
     }    
     .Call( "py_set_major_version", majorVersion)
-    .Call( "py_connect", dllName, dllDir, as.integer(useAlteredSearchPath) )
+    .Call( "py_connect", list(dllName, dllDir, as.integer(useAlteredSearchPath)))
     .Call( "py_get_process_addresses" )
     .Call( "py_set_program_name", "PythonInR" )
     if(useCstdout){
@@ -132,7 +136,7 @@ pyCranConnect <- function(){
 #'          the explicitly linked version needs to be connected manually. 
 #'          More information can be found at the README file or at 
 #'          \url{http://pythoninr.bitbucket.org/}.
-#' @note See the \href{https://cran.r-project.org/web/packages/PythonInR/README.html}{README} for more information about the Windows setup.
+#' @note See the \href{https://CRAN.R-project.org/package=PythonInR/README.html}{README} for more information about the Windows setup.
 #' @examples
 #' \dontrun{
 #' ## Linux examples
