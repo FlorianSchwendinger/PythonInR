@@ -1,8 +1,9 @@
 Package: PythonInR
 Title: Use Python from Within R
 Version: 0.1-4
-Author: Florian Schwendinger [aut, cre]
-Maintainer: Florian Schwendinger <FlorianSchwendinger@gmx.at>
+Authors@R: c( person("Florian", "Schwendinger", role = c("aut", "cre"), 
+                     email = "FlorianSchwendinger@gmx.at"),
+              person("Kimyen", "Truong", role = "ctb") )
 Description: Interact with Python from within R.
 Depends:
     R (>= 2.15)
@@ -20,4 +21,3 @@ BugReports: https://bitbucket.org/Floooo/pythoninr/issues
 License: GPL-3
 NeedsCompilation: yes
 RoxygenNote: 6.0.1
-Suggests: testthat

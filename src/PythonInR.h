@@ -35,9 +35,9 @@ extern int r_int_to_py_long_flag;
 #include <stdio.h>
 #include <errno.h>
 //static FILE * log_file;
-#define logging(M, ...) fprintf(log_file, "[INFO] (%s:%d) " M "\n", __FILE__, __LINE__, ##__VA_ARGS__); fflush(log_file); 
+#define logging(...) fprintf(log_file, "[INFO] (%s:%d) %s \n", __FILE__, __LINE__, ##__VA_ARGS__); fflush(log_file); 
 #else
-#define logging(M, ...)
+#define logging(...)
 #endif
 
 #ifndef PYTHON_IN_R_NO_EXPLICIT_LINKING
