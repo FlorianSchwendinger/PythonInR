@@ -66,7 +66,7 @@ static PyObject* PyInit_logCatcher(void){
     py_connect
       py_connect creates a connection to Python
   ----------------------------------------------------------------------------*/
-SEXP py_connect(SEXP initsigs){
+SEXP py_connect(SEXP initvars){
     #if PY_MAJOR_VERSION >= 3
         static wchar_t *argv[1] = {L""};
         PyImport_AppendInittab("logCatcher", &PyInit_logCatcher);
@@ -83,7 +83,7 @@ SEXP py_connect(SEXP initsigs){
         dlopen( xstr(PYTHONLIBXY), RTLD_NOW | RTLD_GLOBAL ); // NOTE: use RTLD_NOW for debugging RTLD_LAZY else
     #endif
     
-    Py_InitializeEx(asInteger(initsigs));
+    Py_InitializeEx(asInteger(initvars));
     PySys_SetArgv(1, argv);
     Py_SetProgramName(PY_V_CHAR("PythonInR")); 
     
@@ -132,6 +132,38 @@ SEXP py_is_connected(void){
     return c_to_r_integer(Py_IsInitialized());
 }
 
+
+//
+// dummy functions 
+//
+SEXP py_get_process_addresses(void){
+    return R_NilValue;
+}
+
+SEXP py_import_append_logCatcher(void) {
+    return R_NilValue;
+}
+
+SEXP py_init_py_values(void) {
+    return R_NilValue;
+}
+
+SEXP py_init_redirect_stderrout(void) {
+    return R_NilValue;
+}
+
+SEXP py_initialize(SEXP initsigs) {
+    return R_NilValue;
+}
+
+SEXP py_set_major_version(SEXP pythonMajorVersion) {
+    return R_NilValue;
+}
+
+SEXP py_set_program_name(SEXP programName) {
+    return R_NilValue;
+}
+
 #else
 
 /*  ----------------------------------------------------------------------------
@@ -144,7 +176,11 @@ SEXP py_set_major_version(SEXP pythonMajorVersion){
     return R_NilValue;
 }
 
-SEXP py_connect(SEXP dllName, SEXP dllDir, SEXP alteredSearchPath){
+SEXP py_connect(SEXP initvars){   
+    SEXP dllName = VECTOR_ELT(initvars, 0);
+    SEXP dllDir = VECTOR_ELT(initvars, 1);
+    SEXP alteredSearchPath = VECTOR_ELT(initvars, 2);
+
     #ifdef DEBUG_PYTHONINR
         log_file=fopen("PythonInR.log","w");
     #endif
@@ -164,11 +200,7 @@ SEXP py_connect(SEXP dllName, SEXP dllDir, SEXP alteredSearchPath){
         logging("WIN py_connect: Load library with altered search path: %s\n", dll_name);
         /* I use LoadLibraryEx so Windows looks for dependent DLLs
            in directory of pathname first. */
-#ifdef __unix__         
-        void* py_hdll = dlopen( dll_name, RTLD_NOW | RTLD_GLOBAL ); 
-#else
         py_hdll = LoadLibraryEx(dll_name, NULL, LOAD_WITH_ALTERED_SEARCH_PATH);
-#endif        
     }
     if (py_hdll == NULL) error("Error couldn't load dll file!\n");
     return R_NilValue;
@@ -216,7 +248,7 @@ int py_get_api_version(void){
     return api_version;
 }
 
-SEXP py_import_append_logCatcher(void){
+SEXP py_import_append_logCatcher(void) {
     if(PYTHON_MAJOR_VERSION >= 3){
         PyImport_AppendInittab3K("logCatcher", &PyInit_logCatcher);
         return(c_to_r_integer(0));

@@ -55,10 +55,8 @@ HMODULE py_hdll;
 PyObject* log_write(PyObject*, PyObject*);
 PyObject* log_flush(PyObject*, PyObject*);
 
-#ifdef PYTHON_IN_R_NO_EXPLICIT_LINKING
+#ifndef PYTHON_IN_R_NO_EXPLICIT_LINKING
 SEXP py_connect(SEXP);
-#else
-SEXP py_connect(SEXP, SEXP, SEXP);
 
 SEXP py_set_major_version(SEXP);
 
