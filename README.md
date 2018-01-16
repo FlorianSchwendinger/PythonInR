@@ -1,6 +1,6 @@
 # PythonInR
 
-More documenation can be found at [https://bitbucket.org/Floooo/pythoninr](https://bitbucket.org/Floooo/pythoninr) and [http://pythoninr.bitbucket.org/](http://pythoninr.bitbucket.org/).
+More documenation can be found at [https://bitbucket.org/Floooo/pythoninr](https://bitbucket.org/Floooo/pythoninr).
 
 ## Dependencies
 
@@ -51,7 +51,7 @@ the explicitly linked version needs to be connected manually.
      
 To enable automatic connection for the explicitly linked version the environment variable
 **PYTHON_EXE** has to be set. You can put your Python path into your ```.Renviron``` or
-```.Rprofile``` file ([Setting up a .Renviron file](https://bitbucket.org/Floooo/pythoninr/wiki/Initialization%20at%20Start%20of%20an%20R%20Session%20on%20Windows)). 
+```.Rprofile``` file ([Setting up a .Renviron file](https://github.com/FlorianSchwendinger/PythonInR/wiki)). 
 
 ## NOTES
 ### Python 3
