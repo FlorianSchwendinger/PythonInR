@@ -18,6 +18,12 @@
 # -fstack-protector-strong so I just remove it
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+
+# Fedora by default does not include the command python anymore only python3!
+if [ -z `command -v python` ]; then
+	alias python=python3
+fi
+
 if ! [ -z "$USESPECIALPYTHONVERSION" ]; then
     echo "use special version"
     alias python="$USESPECIALPYTHONVERSION"
