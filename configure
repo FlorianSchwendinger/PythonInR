@@ -57,7 +57,7 @@ PYLIBS="PKG_LIBS="`$PYBINPATH/python$PYVERSION-config --ldflags`
 PYCFLAGS="PKG_CFLAGS="`$PYBINPATH/python$PYVERSION-config --cflags`" -D $PYXY -D PYTHON_IN_R_NO_EXPLICIT_LINKING"
 
 
-echo ${PYLIBS} > Makevars
+echo ${PYLIBS} > src/Makevars
 
 ${R_HOME}/bin/R --slave <<EOF
 cflags <- "$PYCFLAGS"
@@ -74,13 +74,13 @@ if (isTRUE(nchar(picflags) > 0)) {
     cflags <- gsub(" -fpic", "", cflags, fixed = TRUE)    
 }
 
-cat(cflags, file="Makevars", append=TRUE)
+cat(cflags, file="src/Makevars", append=TRUE)
 EOF
 
 echo "-----------------------------------"
 echo "  Makevars:"
 echo ""
-cat Makevars
+cat src/Makevars
 echo ""
 echo ""
 echo "-----------------------------------"
