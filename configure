@@ -56,30 +56,32 @@ fi
 PYLIBS="PKG_LIBS="`$PYBINPATH/python$PYVERSION-config --ldflags`
 PYCFLAGS="PKG_CFLAGS="`$PYBINPATH/python$PYVERSION-config --cflags`" -D $PYXY -D PYTHON_IN_R_NO_EXPLICIT_LINKING"
 
-## echo ""
-## echo "Makevars:"
-## echo $PYLIBS
-## echo $PYCFLAGS | sed 's/Wstrict-prototypes/pedantic/' | sed 's/ -fstack-protector-strong//'
-## echo ""
 
-# replacing Wstric-prototypes removes some unnecessary warnings
+echo ${PYLIBS} > Makevars
 
-echo " --------------------------------- "
+${R_HOME}/bin/R --slave <<EOF
+cflags <- "$PYCFLAGS"
+cflags <- gsub(" -Wstrict-prototypes", "", cflags, fixed = TRUE)
+cflags <- gsub(" -fstack-protector-strong", "", cflags, fixed = TRUE)
+cflags <- gsub(" -Wdate-time", "", cflags, fixed = TRUE)
+cflags <- gsub(" -Werror=format-security", "", cflags, fixed = TRUE)
+cflags <- gsub(" -Wformat", "", cflags, fixed = TRUE)
+cflags <- gsub(" -fstack-clash-protection", "", cflags, fixed = TRUE)
+cflags <- gsub(" -fcf-protection", "", cflags, fixed = TRUE)
+
+picflags <- "$PICFLAGS"
+if (isTRUE(nchar(picflags) > 0)) {
+    cflags <- gsub(" -fpic", "", cflags, fixed = TRUE)    
+}
+
+cat(cflags, file="Makevars", append=TRUE)
+EOF
+
+echo "-----------------------------------"
 echo "  Makevars:"
 echo ""
-echo ""$PYLIBS
+cat Makevars
 echo ""
-
-echo ${PYLIBS} > src/Makevars
-echo $PYCFLAGS | sed 's/ -Wstrict-prototypes//' \
-               | sed 's/ -fstack-protector-strong//' \
-               | sed 's/ -Wdate-time//' \
-               | sed 's/ -Werror=format-security//' \
-               | sed 's/ -Wformat//' \
-               | sed 's/ -fstack-clash-protection//' \
-               | sed 's/ -fcf-protection//' \
-        | if ! [ -z "$PICFLAGS" ]; then sed 's/ -fpic//' ; fi \
-    | tee -a src/Makevars
-
-echo " --------------------------------- "
+echo ""
+echo "-----------------------------------"
 echo ""
