@@ -20,7 +20,8 @@
 
 
 # Fedora by default does not include the command python anymore only python3!
-if [ -z `command -v python` ]; then
+#if [ -z `command -v python` ]; then
+if ! type "python" > /dev/null; then
     alias python=python3
 fi
 
@@ -53,11 +54,15 @@ else
     PYXY="PYTHONLIBXY=libpython"$PYVERSION".so"
 fi
 
-PY_LIBS="PKG_LIBS="`$PYBINPATH/python$PYVERSION-config --ldflags`
-PY_CFLAGS="PKG_CFLAGS="`pkg-config python-$PYVERSION --cflags`" -D $PYXY -D PYTHON_IN_R_NO_EXPLICIT_LINKING"
+PKG_LIBS=`$PYBINPATH/python$PYVERSION-config --ldflags`
+PKG_CFLAGS=`pkg-config python-$PYVERSION --cflags`
 
-echo ${PY_LIBS}    > src/Makevars
-echo ${PY_CFLAGS} >> src/Makevars
+#PY_CFLAGS="PKG_CFLAGS="`pkg-config python-$PYVERSION --cflags`" -D $PYXY -D PYTHON_IN_R_NO_EXPLICIT_LINKING"
+
+# echo ${PY_LIBS}    > src/Makevars
+# echo ${PY_CFLAGS} >> src/Makevars
+
+sed -e "s|@PKG_CFLAGS@|$PKG_CFLAGS|" -e "s|@PKG_LIBS@|$PKG_LIBS|" -e "s|@PYXY@|$PYXY|" src/Makevars.in > src/Makevars
 
 echo ""
 echo "-----------------------------------"
@@ -67,3 +72,5 @@ cat src/Makevars
 echo ""
 echo "-----------------------------------"
 echo ""
+
+exit 0
