@@ -22,12 +22,12 @@
 # Fedora by default does not include the command python anymore only python3!
 #if [ -z `command -v python` ]; then
 if ! type "python" > /dev/null; then
-    alias python=python3
+  alias python=python3
 fi
 
 if ! [ -z "$USESPECIALPYTHONVERSION" ]; then
-    echo "use special version"
-    alias python="$USESPECIALPYTHONVERSION"
+  echo "use special version"
+  alias python="$USESPECIALPYTHONVERSION"
 fi 
 
 PYVERSION=`python -c "import sys;import distutils.sysconfig as sc;sys.stdout.write(sc.get_config_var('VERSION'))"`
@@ -44,23 +44,48 @@ PICFLAGS=`"${R_HOME}/bin/R" CMD config CXX11PICFLAGS`
 ## echo ""
 
 ## TODO: 
-## Change the generation of PKG_LIBS so it works with coda.
+## Change the generation of PKG_LIBS so it works with conda.
 ## PYLIBS="PKG_LIBS="`python -c 'import sysconfig; print(" ".join(sysconfig.get_config_var("LDSHARED").split()[1:]))'`
 if [ $PY3FLAG -eq 0 ]; then
-    echo "python version is > 3"
-    PYXY="PYTHONLIBXY=libpython"$PYVERSION"m.so"    
+  echo "python version is > 3"
+  PYXY="PYTHONLIBXY=libpython"$PYVERSION"m.so"    
 else 
-    echo "python version is < 3"
-    PYXY="PYTHONLIBXY=libpython"$PYVERSION".so"
+  echo "python version is < 3"
+  PYXY="PYTHONLIBXY=libpython"$PYVERSION".so"
 fi
 
 PKG_LIBS=`$PYBINPATH/python$PYVERSION-config --ldflags`
-PKG_CFLAGS=`pkg-config python-$PYVERSION --cflags`
 
-#PY_CFLAGS="PKG_CFLAGS="`pkg-config python-$PYVERSION --cflags`" -D $PYXY -D PYTHON_IN_R_NO_EXPLICIT_LINKING"
+## 
+## PKG_CFLAGS
+## 
+if (type "pkg-config" > /dev/null); then
+  if (pkg-config --exists python-$PYVERSION); then
+    PKG_CFLAGS=`pkg-config --cflags python-$PYVERSION`
+    PKG_CFLAGS=`$PYBINPATH/python$PYVERSION-config --cflags`
+  else
+    PKG_CFLAGS=`$PYBINPATH/python$PYVERSION-config --cflags`
+  fi
+else
+  PKG_CFLAGS=`$PYBINPATH/python$PYVERSION-config --cflags`
+fi
 
-# echo ${PY_LIBS}    > src/Makevars
-# echo ${PY_CFLAGS} >> src/Makevars
+
+PKG_CFLAGS=$(echo $PKG_CFLAGS | sed 's/ -Wstrict-prototypes//')
+PKG_CFLAGS=$(echo $PKG_CFLAGS | sed 's/ -fstack-protector-strong//')    
+PKG_CFLAGS=$(echo $PKG_CFLAGS | sed 's/ -Wdate-time//') 
+PKG_CFLAGS=$(echo $PKG_CFLAGS | sed 's/ -Werror=format-security//') 
+PKG_CFLAGS=$(echo $PKG_CFLAGS | sed 's/ -Wformat//')    
+
+## added 27.07.2018 
+PKG_CFLAGS=$(echo $PKG_CFLAGS | sed 's/ -fstack-clash-protection//')    
+PKG_CFLAGS=$(echo $PKG_CFLAGS | sed 's/ -fcf-protection//') 
+
+if ! [ -z "$PICFLAGS" ]; then   
+  PKG_CFLAGS=$(echo $PKG_CFLAGS | sed 's/ -fpic//') 
+fi  
+
+
 
 sed -e "s|@PKG_CFLAGS@|$PKG_CFLAGS|" -e "s|@PKG_LIBS@|$PKG_LIBS|" -e "s|@PYXY@|$PYXY|" src/Makevars.in > src/Makevars
 
