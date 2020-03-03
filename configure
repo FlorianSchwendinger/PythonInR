@@ -28,10 +28,10 @@ PYINCLUDE=`python3 -c "import sys;import distutils.sysconfig as sc;sys.stdout.wr
 PYBINPATH=`python3 -c "import sys;import os;sys.stdout.write(os.path.dirname(sys.executable))"`
 # sys.version_info.major would be a alternative to hexversion
 PY3FLAG=`python3 -c 'import sys; print("%i" % (sys.hexversion<0x03000000))'`
-PYABOVE38FLAG=`python3 -c 'import sys; print("%i" % (sys.hexversion>0x0380000))'`
+PYABOVE38FLAG=`python3 -c 'import sys; print("%i" % (sys.hexversion>0x03080000))'`
 PICFLAGS=`"${R_HOME}/bin/R" CMD config CXX11PICFLAGS`
 
-if [ $PYABOVE38FLAG -eq 0 ]; then
+if [ $PYABOVE38FLAG -eq 1 ]; then
   PYEMBEDPKGCONF=" -embed"
   PYEMBEDPYCONF="--embed"
 fi

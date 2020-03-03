@@ -1,6 +1,6 @@
 Package: PythonInR
 Title: Use 'Python' from Within 'R'
-Version: 0.1-8
+Version: 0.1-9
 Authors@R: c( person("Florian", "Schwendinger", role = c("aut", "cre"), 
                      email = "FlorianSchwendinger@gmx.at"),
               person("Kimyen", "Truong", role = "ctb") )
