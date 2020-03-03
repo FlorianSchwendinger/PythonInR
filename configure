@@ -5,37 +5,38 @@
 #
 # NOTES:
 # The system variable USESPECIALPYTHONVERSION can be used to link to a special
-# python version. 
+# python version.
 # export USESPECIALPYTHONVERSION="python3.4"
 # it can be very usefull especially for testing but one has to ensure  that
 # the file PYVERSION-config is present at the provided location else it will
 # fail.
-# But when using python3 also python3-dev has to be installed 
+# But when using python3 also python3-dev has to be installed
 # (apt-get install python3-dev)
-# 
+#
 # gcc:
 # there seems to be a new option which doesn't allows me to compile
 # -fstack-protector-strong so I just remove it
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
-# Fedora by default does not include the command python anymore only python3!
-#if [ -z `command -v python` ]; then
-if ! type "python" > /dev/null; then
-  alias python=python3
-fi
-
 if ! [ -z "$USESPECIALPYTHONVERSION" ]; then
   echo "use special version"
-  alias python="$USESPECIALPYTHONVERSION"
-fi 
+  alias python3="$USESPECIALPYTHONVERSION"
+fi
 
-PYVERSION=`python -c "import sys;import distutils.sysconfig as sc;sys.stdout.write(sc.get_config_var('VERSION'))"`
-PYINCLUDE=`python -c "import sys;import distutils.sysconfig as sc;sys.stdout.write(sc.get_config_var('INCLUDEPY'))"`
-PYBINPATH=`python -c "import sys;import os;sys.stdout.write(os.path.dirname(sys.executable))"`
+PYVERSION=`python3 -c "import sys;import distutils.sysconfig as sc;sys.stdout.write(sc.get_config_var('VERSION'))"`
+PYINCLUDE=`python3 -c "import sys;import distutils.sysconfig as sc;sys.stdout.write(sc.get_config_var('INCLUDEPY'))"`
+PYBINPATH=`python3 -c "import sys;import os;sys.stdout.write(os.path.dirname(sys.executable))"`
 # sys.version_info.major would be a alternative to hexversion
-PY3FLAG=`python -c 'import sys; print("%i" % (sys.hexversion<0x03000000))'`
+PY3FLAG=`python3 -c 'import sys; print("%i" % (sys.hexversion<0x03000000))'`
+PYABOVE38FLAG=`python3 -c 'import sys; print("%i" % (sys.hexversion>0x0380000))'`
 PICFLAGS=`"${R_HOME}/bin/R" CMD config CXX11PICFLAGS`
+
+if [ $PYABOVE38FLAG -eq 0 ]; then
+  PYEMBEDPKGCONF=" -embed"
+  PYEMBEDPYCONF="--embed"
+fi
+
+#python-3.8-embed
 
 ## echo $PYVERSION
 ## echo $PYBINPATH
@@ -43,47 +44,46 @@ PICFLAGS=`"${R_HOME}/bin/R" CMD config CXX11PICFLAGS`
 ## echo $PICFLAGS
 ## echo ""
 
-## TODO: 
+## TODO:
 ## Change the generation of PKG_LIBS so it works with conda.
 ## PYLIBS="PKG_LIBS="`python -c 'import sysconfig; print(" ".join(sysconfig.get_config_var("LDSHARED").split()[1:]))'`
 if [ $PY3FLAG -eq 0 ]; then
   echo "python version is > 3"
-  PYXY="PYTHONLIBXY=libpython"$PYVERSION"m.so"    
-else 
+  PYXY="PYTHONLIBXY=libpython"$PYVERSION"m.so"
+else
   echo "python version is < 3"
   PYXY="PYTHONLIBXY=libpython"$PYVERSION".so"
 fi
 
-PKG_LIBS=`$PYBINPATH/python$PYVERSION-config --ldflags`
+PKG_LIBS=`$PYBINPATH/python$PYVERSION-config --ldflags $PYEMBEDPYCONF`
 
-## 
+##
 ## PKG_CFLAGS
-## 
-if (type "pkg-config" > /dev/null); then
-  if (pkg-config --exists python-$PYVERSION); then
-    PKG_CFLAGS=`pkg-config --cflags python-$PYVERSION`
-    PKG_CFLAGS=`$PYBINPATH/python$PYVERSION-config --cflags`
+##
+if [ -z "$(pkg-config --version 2>&1 | grep 'pkg-config')" ]; then
+  if (pkg-config --exists python-$PYVERSION$PYEMBEDPKGCONF); then
+    PKG_CFLAGS=`pkg-config --cflags python-$PYVERSION$PYEMBEDPKGCONF`
   else
-    PKG_CFLAGS=`$PYBINPATH/python$PYVERSION-config --cflags`
+    PKG_CFLAGS=`$PYBINPATH/python$PYVERSION-config --cflags $PYEMBEDPYCONF`
   fi
 else
-  PKG_CFLAGS=`$PYBINPATH/python$PYVERSION-config --cflags`
+  PKG_CFLAGS=`$PYBINPATH/python$PYVERSION-config --cflags $PYEMBEDPYCONF`
 fi
 
 
 PKG_CFLAGS=$(echo $PKG_CFLAGS | sed 's/ -Wstrict-prototypes//')
-PKG_CFLAGS=$(echo $PKG_CFLAGS | sed 's/ -fstack-protector-strong//')    
-PKG_CFLAGS=$(echo $PKG_CFLAGS | sed 's/ -Wdate-time//') 
-PKG_CFLAGS=$(echo $PKG_CFLAGS | sed 's/ -Werror=format-security//') 
-PKG_CFLAGS=$(echo $PKG_CFLAGS | sed 's/ -Wformat//')    
+PKG_CFLAGS=$(echo $PKG_CFLAGS | sed 's/ -fstack-protector-strong//')
+PKG_CFLAGS=$(echo $PKG_CFLAGS | sed 's/ -Wdate-time//')
+PKG_CFLAGS=$(echo $PKG_CFLAGS | sed 's/ -Werror=format-security//')
+PKG_CFLAGS=$(echo $PKG_CFLAGS | sed 's/ -Wformat//')
 
-## added 27.07.2018 
-PKG_CFLAGS=$(echo $PKG_CFLAGS | sed 's/ -fstack-clash-protection//')    
-PKG_CFLAGS=$(echo $PKG_CFLAGS | sed 's/ -fcf-protection//') 
+## added 27.07.2018
+PKG_CFLAGS=$(echo $PKG_CFLAGS | sed 's/ -fstack-clash-protection//')
+PKG_CFLAGS=$(echo $PKG_CFLAGS | sed 's/ -fcf-protection//')
 
-if ! [ -z "$PICFLAGS" ]; then   
-  PKG_CFLAGS=$(echo $PKG_CFLAGS | sed 's/ -fpic//') 
-fi  
+if ! [ -z "$PICFLAGS" ]; then
+  PKG_CFLAGS=$(echo $PKG_CFLAGS | sed 's/ -fpic//')
+fi
 
 
 
