@@ -32,7 +32,8 @@ PYABOVE38FLAG=`python3 -c 'import sys; print("%i" % (sys.hexversion>0x03080000))
 PICFLAGS=`"${R_HOME}/bin/R" CMD config CXX11PICFLAGS`
 
 if [ $PYABOVE38FLAG -eq 1 ]; then
-  PYEMBEDPKGCONF=" -embed"
+  echo "detected python3.8 or newer"
+  PYEMBEDPKGCONF="-embed"
   PYEMBEDPYCONF="--embed"
 fi
 
@@ -62,12 +63,17 @@ PKG_LIBS=`$PYBINPATH/python$PYVERSION-config --ldflags $PYEMBEDPYCONF`
 ##
 if [ -z "$(pkg-config --version 2>&1 | grep 'pkg-config')" ]; then
   if (pkg-config --exists python-$PYVERSION$PYEMBEDPKGCONF); then
+    echo "pkg-config"
     PKG_CFLAGS=`pkg-config --cflags python-$PYVERSION$PYEMBEDPKGCONF`
   else
-    PKG_CFLAGS=`$PYBINPATH/python$PYVERSION-config --cflags $PYEMBEDPYCONF`
+    #echo "python-config"
+    #PKG_CFLAGS=`$PYBINPATH/python$PYVERSION-config --cflags $PYEMBEDPYCONF`
+    PKG_CFLAGS="-I$PYINCLUDE"
   fi
 else
-  PKG_CFLAGS=`$PYBINPATH/python$PYVERSION-config --cflags $PYEMBEDPYCONF`
+  #echo "python-config"
+  #PKG_CFLAGS=`$PYBINPATH/python$PYVERSION-config --cflags $PYEMBEDPYCONF`
+  PKG_CFLAGS="-I$PYINCLUDE"
 fi
 
 
